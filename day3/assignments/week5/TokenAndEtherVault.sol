@@ -98,23 +98,31 @@ abstract contract Robotron20 is IERC20 {
     // Store Ether
     function depositEther() external payable {
         require(msg.value > 0, "Cannot deposit zero ether");
+
         etherBalance[msg.sender] = etherBalance[msg.sender] + msg.value;
+
         emit EtherDeposit(msg.sender, msg.value);
     }
 
     // Withdraw Ether
     function withdrawEther(uint256 _amount) external {
         require(etherBalance[msg.sender] >= _amount, "Insufficient Ether");
+
         etherBalance[msg.sender] = etherBalance[msg.sender] - _amount;
+
         (bool success,) = payable(msg.sender).call{value: _amount}("");
+
         require(success, "Withdrawal unsuccessful");
+
         emit EtherWithdrawal(msg.sender, _amount);
     }
 
     // Store ERC20 Token
     function depositToken(address token, uint256 _amount) external {
         IERC20(token).transferFrom(msg.sender, address(this), _amount);
-        tokenBalance[msg.sender][token] = tokenBalance[msg.sender][token] - _amount;
+
+        tokenBalance[msg.sender][token] = tokenBalance[msg.sender][token] + _amount;
+
         emit TokenDeposit(msg.sender, _amount);
     }
 
