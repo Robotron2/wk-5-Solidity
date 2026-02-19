@@ -71,7 +71,7 @@ contract SchoolToken {
 
         balanceOf[address(this)] = balanceOf[address(this)] - amountToBuy;
 
-        balanceOf[msg.sender] = balanceOf[msg.sender] - amountToBuy;
+        balanceOf[msg.sender] = balanceOf[msg.sender] + amountToBuy;
 
         emit Transfer(address(this), msg.sender, amountToBuy);
     }
@@ -119,9 +119,10 @@ contract SchoolToken {
     mapping(uint256 => Student) public students;
     mapping(uint256 => Staff) public staffs;
 
-    mapping(uint256 => uint256) public levelFee;
+    Student[] private allStudents;
+    Staff[] private allStaffs;
 
-    mapping(address _depositorAddress => uint256 _amountDeposited) public ethBalance;
+    mapping(uint256 => uint256) public levelFee;
 
     function setLevelFee(uint256 level, uint256 fee) external onlyOwner {
         require(level >= 100 && level <= 400, "Invalid level");
@@ -132,21 +133,30 @@ contract SchoolToken {
         uint256 fee = levelFee[_level];
         require(fee > 0, "Fee not set");
 
-        // Contract pulls fee from student
-        transferFrom(msg.sender, owner, fee);
+        require(balanceOf[msg.sender] >= fee, "Insufficient balance");
+
+        balanceOf[msg.sender] = balanceOf[msg.sender] - fee;
+        balanceOf[owner] = balanceOf[owner] + fee;
+
+        emit Transfer(msg.sender, owner, fee);
 
         studentCount++;
-
-        students[studentCount] = Student({
+        Student memory newStudent = Student({
             id: studentCount, name: _name, level: _level, feePaid: fee, isPaid: true, paymentTimestamp: block.timestamp
         });
+
+        students[studentCount] = newStudent;
+        allStudents.push(newStudent);
     }
 
     function registerStaff(string memory _name, address _staffAddress) external onlyOwner {
         staffCount++;
 
-        staffs[staffCount] =
+        Staff memory newStaff =
             Staff({id: staffCount, name: _name, staffAddress: _staffAddress, salaryPaid: 0, paymentTimestamp: 0});
+
+        staffs[staffCount] = newStaff;
+        allStaffs.push(newStaff);
     }
 
     // Pay Staff with SCH TOKEN
@@ -169,16 +179,25 @@ contract SchoolToken {
         require(success, "Withdrawal failed");
     }
 
-    function depositETH() public payable {
-        require(msg.value > 0, "Send ETH");
-        ethBalance[msg.sender] += msg.value;
+    // ================= GETTER FUNCTIONS =================
+    function getStudentById(uint256 _studentId) public view returns (Student memory) {
+        return students[_studentId];
     }
 
-    receive() external payable {
-        depositETH();
+    function getAllStudents() public view returns (Student[] memory) {
+        return allStudents;
     }
 
-    fallback() external payable {
-        depositETH();
+    function getStaffById(uint256 _staffId) public view returns (Staff memory) {
+        return staffs[_staffId];
     }
+
+    function getAllStaffs() public view returns (Staff[] memory) {
+        return allStaffs;
+    }
+
+    // ================= FALLBACK FUNCTIONS =================
+    receive() external payable {}
+
+    fallback() external payable {}
 }
