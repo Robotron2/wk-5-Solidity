@@ -20,7 +20,7 @@ interface IERC20 {
     event Approval(address indexed owner, address spender, uint256 indexed _amount);
 }
 
-abstract contract Robotron20 is IERC20 {
+contract Robotron20 is IERC20 {
     uint256 public totalSupply; //total coin available mint = +ve, burn + burn
 
     address public owner;

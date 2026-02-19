@@ -1,22 +1,17 @@
-# Assignment 1: Data Locations and Behavior in Solidity
+### Assignment 2
 
-## 1. Where are structs, mappings, and arrays stored?
+## Requirements
 
-- **Contract Level:** Structs, arrays, and mappings declared at the contract level are always stored in **storage**.
-- **Inside Functions:** \* For structs and arrays, the location depends on the keyword specified: `memory`, `storage`, or `calldata`.
-    - **Mappings:** Mappings are always in **storage**, regardless of where they are declared.
+Create a School management system where people can:
 
-## 2. How do they behave when executed or called?
+- Register students & Staffs.
+- Pay School fees on registration.
+- Pay staffs also.
+- Get the students and their details.
+- Get all Staffs.
+- Pricing is based on grade / levels from 100 - 400 level.
+- Payment status can be updated once the payment is made which should include the timestamp.
 
-- **Storage:** Acts as a **reference**. Modifying the variable **modifies the original** data state.
-- **Memory:** Acts as a **copy**. Modifying the variable **does not modify the original** data (changes are temporary).
-- **Calldata:** This is a **read-only** external input. It cannot be modified.
-- **Mappings:** These are **storage only** and function as reference types.
+#### Submission
 
-## 3. Why don't you need to specify memory or storage with mappings?
-
-You do not need to specify the data location for mappings because:
-
-1.  Mappings **cannot exist in memory**; they are strictly a storage concept.
-2.  They have **no length** (conceptually infinite).
-3.  They use **hashed storage slots** to look up values, which makes them incompatible with how memory is structured in the EVM.
+- The submission time is `9AM thursday morning.`
