@@ -121,6 +121,8 @@ contract SchoolToken {
 
     mapping(uint256 => uint256) public levelFee;
 
+    mapping(address _depositorAddress => uint256 _amountDeposited) public ethBalance;
+
     function setLevelFee(uint256 level, uint256 fee) external onlyOwner {
         require(level >= 100 && level <= 400, "Invalid level");
         levelFee[level] = fee;
@@ -160,5 +162,23 @@ contract SchoolToken {
 
         staff.salaryPaid = staff.salaryPaid + amount;
         staff.paymentTimestamp = block.timestamp;
+    }
+
+    function withdrawETH() external onlyOwner {
+        (bool success,) = payable(owner).call{value: address(this).balance}("");
+        require(success, "Withdrawal failed");
+    }
+
+    function depositETH() public payable {
+        require(msg.value > 0, "Send ETH");
+        ethBalance[msg.sender] += msg.value;
+    }
+
+    receive() external payable {
+        depositETH();
+    }
+
+    fallback() external payable {
+        depositETH();
     }
 }
