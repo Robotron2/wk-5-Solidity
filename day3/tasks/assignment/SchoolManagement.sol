@@ -37,8 +37,8 @@ contract SchoolToken {
     function transfer(address to, uint256 amount) external returns (bool) {
         require(balanceOf[msg.sender] >= amount, "Insufficient balance");
 
-        balanceOf[msg.sender] -= amount;
-        balanceOf[to] += amount;
+        balanceOf[msg.sender] = balanceOf[msg.sender] - amount;
+        balanceOf[to] = balanceOf[to] + amount;
 
         emit Transfer(msg.sender, to, amount);
         return true;
@@ -54,11 +54,43 @@ contract SchoolToken {
         require(balanceOf[from] >= amount, "Insufficient balance");
         require(allowance[from][msg.sender] >= amount, "No allowance");
 
-        allowance[from][msg.sender] -= amount;
-        balanceOf[from] -= amount;
-        balanceOf[to] += amount;
+        allowance[from][msg.sender] = allowance[from][msg.sender] - amount;
+        balanceOf[from] = balanceOf[from] - amount;
+        balanceOf[to] = balanceOf[to] + amount;
 
         emit Transfer(from, to, amount);
         return true;
+    }
+
+    function buySCHToken() external payable {
+        require(msg.value > 0, "Send ETH");
+
+        uint256 amountToBuy = (msg.value * (10 ** decimals)) / tokenPrice;
+
+        require(balanceOf[address(this)] >= amountToBuy, "Not enough supply");
+
+        balanceOf[address(this)] = balanceOf[address(this)] - amountToBuy;
+
+        balanceOf[msg.sender] = balanceOf[msg.sender] - amountToBuy;
+
+        emit Transfer(address(this), msg.sender, amountToBuy);
+    }
+
+    function sellSCHToken(uint256 tokenAmount) external {
+        require(tokenAmount > 0, "Zero amount");
+
+        require(balanceOf[msg.sender] >= tokenAmount, "Not enough token");
+
+        uint256 ethAmount = (tokenAmount * tokenPrice) / (10 ** decimals);
+
+        require(address(this).balance >= ethAmount, "Not enough ETH in contract");
+
+        balanceOf[msg.sender] = balanceOf[msg.sender] - tokenAmount;
+
+        balanceOf[address(this)] = balanceOf[address(this)] + tokenAmount;
+
+        emit Transfer(msg.sender, address(this), tokenAmount);
+
+        (bool success,) = payable(msg.sender).call{value: ethAmount}("");
     }
 }
