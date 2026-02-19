@@ -93,4 +93,50 @@ contract SchoolToken {
 
         (bool success,) = payable(msg.sender).call{value: ethAmount}("");
     }
+
+    // ================= SCHOOL MANAGEMENT =================
+
+    struct Student {
+        uint256 id;
+        string name;
+        uint256 level;
+        uint256 feePaid;
+        bool isPaid;
+        uint256 paymentTimestamp;
+    }
+
+    struct Staff {
+        uint256 id;
+        string name;
+        address staffAddress;
+        uint256 salaryPaid;
+        uint256 paymentTimestamp;
+    }
+
+    uint256 public studentCount;
+    uint256 public staffCount;
+
+    mapping(uint256 => Student) public students;
+    mapping(uint256 => Staff) public staffs;
+
+    mapping(uint256 => uint256) public levelFee;
+
+    function setLevelFee(uint256 level, uint256 fee) external onlyOwner {
+        require(level >= 100 && level <= 400, "Invalid level");
+        levelFee[level] = fee;
+    }
+
+    function registerStudent(string memory _name, uint256 _level) external {
+        uint256 fee = levelFee[_level];
+        require(fee > 0, "Fee not set");
+
+        // Contract pulls fee from student
+        transferFrom(msg.sender, owner, fee);
+
+        studentCount++;
+
+        students[studentCount] = Student({
+            id: studentCount, name: _name, level: _level, feePaid: fee, isPaid: true, paymentTimestamp: block.timestamp
+        });
+    }
 }
