@@ -139,4 +139,11 @@ contract SchoolToken {
             id: studentCount, name: _name, level: _level, feePaid: fee, isPaid: true, paymentTimestamp: block.timestamp
         });
     }
+
+    function registerStaff(string memory _name, address _staffAddress) external onlyOwner {
+        staffCount++;
+
+        staffs[staffCount] =
+            Staff({id: staffCount, name: _name, staffAddress: _staffAddress, salaryPaid: 0, paymentTimestamp: 0});
+    }
 }
