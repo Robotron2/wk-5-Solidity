@@ -146,4 +146,19 @@ contract SchoolToken {
         staffs[staffCount] =
             Staff({id: staffCount, name: _name, staffAddress: _staffAddress, salaryPaid: 0, paymentTimestamp: 0});
     }
+
+    // Pay Staff with SCH TOKEN
+    function payStaffToken(uint256 _staffId, uint256 amount) external onlyOwner {
+        Staff storage staff = staffs[_staffId];
+
+        require(balanceOf[owner] >= amount, "Not enough token");
+
+        balanceOf[owner] = balanceOf[owner] - amount;
+        balanceOf[staff.staffAddress] = balanceOf[staff.staffAddress] + amount;
+
+        emit Transfer(owner, staff.staffAddress, amount);
+
+        staff.salaryPaid = staff.salaryPaid + amount;
+        staff.paymentTimestamp = block.timestamp;
+    }
 }
