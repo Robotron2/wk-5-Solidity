@@ -10,6 +10,9 @@ contract PropertyManagement is AccessControl, ReentrancyGuard {
     error PropertyManagement__NotPropertyOwner();
     error PropertyManagement__NotContractOwner();
     error PropertyManagement__NotValidPrice();
+    error PropertyManagement__NotValidProperty();
+    error PropertyManagement__NotForsale();
+    error PropertyManagement__NotValidBuyer();
 
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
 
@@ -83,8 +86,87 @@ contract PropertyManagement is AccessControl, ReentrancyGuard {
         emit PropertyCreated(propertyCounter, _name, _price);
     }
 
-    // remove property
+    // ============================
+    // REMOVE PROPERTY
+    // ============================
+    function removeProperty(uint256 _propertyId) external isPropertyOwner(_propertyId) {
+        require(properties[_propertyId].exists, "Property does not exist");
+        if (!properties[_propertyId].exists) {
+            revert PropertyManagement__NotValidProperty();
+        }
 
-    // Getters
+        delete properties[_propertyId];
+
+        for (uint8 i; i < allProperties.length; i++) {
+            if (allProperties[i].id == _id) {
+                allProperties[i] = allProperties[allProperties.length - 1];
+                allProperties.pop();
+            }
+        }
+
+        emit PropertyRemoved(_propertyId);
+    }
+
+    // ============================
+    // BUY PROPERTY
+    // ============================
+    function buyProperty(uint256 _propertyId) external nonReentrant {
+        Property memory property = properties[_propertyId];
+
+        require(property.exists, "Property does not exist");
+        if (!property.exists) revert PropertyManagement__NotValidProperty();
+        if (!property.isForSale) revert PropertyManagement__NotForsale();
+        if (property.owner == msg.sender) revert PropertyManagement__NotForsale();
+
+        uint256 price = property.price;
+        address seller = property.owner;
+
+        // Transfer tokens from buyer to seller - buyer should approve allowances.
+        require(RobotronToken.transferFrom(msg.sender, seller, price), "Payment failed");
+
+        property.owner = msg.sender;
+        property.isForSale = false;
+
+        emit PropertyPurchased(_propertyId, msg.sender);
+    }
+
+    // ============================
+    // SET PROPERTY FOR SALE
+    // ============================
+    function setForSale(uint256 _propertyId, uint256 _newPrice) external {
+        Property storage property = properties[_propertyId];
+
+        require(property.exists, "Property does not exist");
+        require(property.owner == msg.sender, "Not property owner");
+        require(_newPrice > 0, "Invalid price");
+
+        property.price = _newPrice;
+        property.isForSale = true;
+    }
+
+    // ============================
+    // GETTERS
+    // ============================
+    function getAllProperties() external view returns (Property[] memory) {
+        Property[] memory allProperties = new Property[](propertyCounter);
+
+        for (uint256 i = 1; i <= propertyCounter; i++) {
+            allProperties[i - 1] = properties[i];
+        }
+
+        return allProperties;
+    }
+
+    function getPropertiesForSale() external view returns (Property[] memory) {
+        Property[] memory allPropertiesForsale;
+
+        for (uint256 i = 1; i <= propertyCounter; i++) {
+            if (properties[i].isForSale) {
+                allPropertiesForsale.push(properties[i]);
+            }
+        }
+
+        return allPropertiesForsale;
+    }
 }
 
