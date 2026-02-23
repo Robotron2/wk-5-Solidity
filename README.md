@@ -1,8 +1,8 @@
-### Deployed contract addresses
+# Property Management
 
-- ERC20.sol - 0xE8392f4c67Fde180CAA4A7A7B3FB18D1b38bA154
-- Lock.sol -
-- SaveAsset.sol(token 0xE8392f4c67Fde180CAA4A7A7B3FB18D1b38bA154) - 0x54b9B83FD8B3C2da6316a4B30Ebbe23B32c96281
-- SaveEther.sol - 0x1F92a3c9b5dA7870d95DCDbA2558A944A4afEBF0
-- Todo.sol - 0x94cB74927B7B946413c5D90f9a6020DC6693db95
-- SchoolManagement - 0x8C90f76C40bD4213983ECbB38F92AeECd71e348b
+Write a property management contract that can:
+
+### Requirements
+
+- create a property.
+- remove a property
