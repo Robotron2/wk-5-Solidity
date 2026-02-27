@@ -8,8 +8,8 @@ contract ModFactory {
     //keep track of those child instances -> using their owner
     mapping(address _childAddress => address _childAddressOwner) public childContractAddressOwners;
 
-    function createChild() external {
-        OurModifier ourModifier = new OurModifier();
+    function createChild(address _owner) external {
+        OurModifier ourModifier = new OurModifier(_owner);
         // pussh those child instances into an array.
         childInstances.push(address(ourModifier));
         childContractAddressOwners[address(ourModifier)] = msg.sender;
